@@ -2,29 +2,18 @@ import sys
 
 import sqlite3
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QTableWidget, \
-    QAbstractItemView
-from PyQt5 import uic
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
+from release.main_window import MainWindow
+from release.edit_form import EditForm
 
 
-class MyWidget(QMainWindow):
+class MyWidget(QMainWindow, MainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi('main.ui', self)
-        self.con = sqlite3.connect("coffee.sqlite")
+        self.con = sqlite3.connect("release/data/coffee.sqlite")
         self.cur = self.con.cursor()
         self.result = None
-        self.setupUi()
-
-    def setupUi(self):
-        self.setWindowTitle("Кофе")
-        self.setCentralWidget(self.gridLayoutWidget)
-        self.tableWidget.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.tableWidget.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.tableWidget.verticalHeader().setVisible(False)
-        self.tableWidget.doubleClicked.connect(self.change)
-        self.pushButton.clicked.connect(self.add)
+        self.setupUi(self)
         self.update_table()
 
     def update_table(self):
@@ -68,7 +57,7 @@ class MyWidget(QMainWindow):
             self.update_table()
 
 
-class ChangeForm(QMainWindow):
+class ChangeForm(QMainWindow, EditForm):
     def __init__(self, items, con, mode, main_window):
         super().__init__()
         self.main_window = main_window
@@ -81,31 +70,9 @@ class ChangeForm(QMainWindow):
             self.taste = items[4]
             self.cost = items[5]
             self.volume = items[6]
-        uic.loadUi('addEditCoffeeForm.ui', self)
         self.con = con
         self.cur = self.con.cursor()
-        self.setupUi()
-
-    def setupUi(self):
-        self.roastings = [el[0] for el in
-                          self.cur.execute("""SELECT roasting FROM roastings""").fetchall()]
-        self.structures = [el[0] for el in
-                           self.cur.execute(
-                               """SELECT structure FROM structures""").fetchall()]
-        self.setWindowTitle("Изменение" if self.mode else "Добавление")
-        self.setCentralWidget(self.gridLayoutWidget)
-        self.setFixedSize(self.size())
-        self.comboBox.addItems(self.roastings)
-        self.comboBox_2.addItems(self.structures)
-        if self.mode:
-            self.lineEdit.setText(self.name)
-            self.comboBox.setCurrentText(self.roasting)
-            self.comboBox_2.setCurrentText(self.structure)
-            self.plainTextEdit.setPlainText(self.taste)
-            self.doubleSpinBox.setValue(self.cost)
-            self.doubleSpinBox_2.setValue(self.volume)
-
-        self.buttonBox.clicked.connect(self.get_click)
+        self.setupUi(self)
 
     def get_click(self, btn):
         if btn.text() == "OK":
